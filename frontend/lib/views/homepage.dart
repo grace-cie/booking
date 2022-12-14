@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:io';
+// import 'dart:io';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'tabs/home.dart';
 import 'tabs/profile.dart';
@@ -23,37 +23,40 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage>{
   Future<bool> _onWillPop() async {
-    return (await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Are you sure?'),
-            content: const Text('Do you want to exit an App'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false), //<-- SEE HERE
-                child: const Text('No'),
-              ),
-              TextButton(
-                onPressed: () => SystemNavigator.pop(), // <-- SEE HERE
-                child: const Text('Yes'),
-              ),
-            ],
-          ),
-        )) ??
-        false;
+    return (
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Are you sure?'),
+          content: const Text('Do you want to exit an App'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false), //<-- SEE HERE
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => SystemNavigator.pop(), // <-- SEE HERE
+              child: const Text('Yes'),
+            ),
+          ],
+        ),
+      )
+    ) ?? false;
   }
+  
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   
   static final List<Widget> _widgetOptions = <Widget>[
-    
-    const ProfileUi(),
-    
+
     const HomeUi(),
-    
+
     const BookUi(),
+
+    const SearchDoctorUi(),
     
-    const SearchDoctorUi()
+    const ProfileUi()
+    
   ];
 
   @override

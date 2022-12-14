@@ -48,9 +48,17 @@ class MainFormState extends State<MainForm>{
       print('error');
       print(map);
     } else {
+      apihandler.login(response.body);
       await Future.delayed(const Duration(seconds: 1)).then((_){
         // ignore: use_build_context_synchronously
-        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => const HomePage()));
+        Navigator.push(
+          context, 
+          MaterialPageRoute(
+            builder: (
+              BuildContext context
+            ) => const HomePage()
+          )
+        );
       });
         
       

@@ -26,7 +26,7 @@ class SearchDoctorUiState extends State<SearchDoctorUi>{
               
             }, 
             child: const Text(
-              'Index 3: Profile',
+              'Index 3: Search',
               // style: optionStyle,
             ),
           )

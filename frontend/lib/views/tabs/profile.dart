@@ -26,7 +26,7 @@ class ProfileUiState extends State<ProfileUi>{
               
             }, 
             child: const Text(
-              'Index 0: Home',
+              'Index 0: Profile',
               // style: optionStyle,
             ),
           )

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/controllers/booking-api-handler.dart';
+import 'package:get/get.dart';
 
 void main(){
   runApp(const HomeUi());
@@ -12,8 +14,11 @@ class HomeUi extends StatefulWidget {
 }
 
 class HomeUiState extends State<HomeUi>{
+  ApiHandler apifind = Get.find<ApiHandler>();
+
   @override
   Widget build(BuildContext context) {
+    var name = apifind.username;
     return Container(
       width: double.infinity,
       height: double.infinity,
@@ -25,8 +30,8 @@ class HomeUiState extends State<HomeUi>{
             onPressed: () {
               
             }, 
-            child: const Text(
-              'Index 1: Book Appointment',
+            child: Text(
+              'Index 1: Home $name',
               // style: optionStyle,
             ),
           )

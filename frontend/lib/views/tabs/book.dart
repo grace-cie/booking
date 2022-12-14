@@ -26,7 +26,7 @@ class BookUiState extends State<BookUi>{
               
             }, 
             child: const Text(
-              'Index 2: Search',
+              'Index 2: Book Appointment',
               // style: optionStyle,
             ),
           )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/controllers/booking-api-handler.dart';
 import 'package:get/get.dart';
 
+
 void main(){
   runApp(const HomeUi());
 }
@@ -16,24 +17,25 @@ class HomeUi extends StatefulWidget {
 class HomeUiState extends State<HomeUi>{
   ApiHandler apifind = Get.find<ApiHandler>();
 
+
+
   @override
   Widget build(BuildContext context) {
-    var name = apifind.username;
+    // getUserData();
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.purple,
+      color: const Color.fromRGBO(109, 85, 246, 1),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ElevatedButton(
-            onPressed: () {
-              
-            }, 
-            child: Text(
-              'Index 1: Home $name',
-              // style: optionStyle,
-            ),
+          Text(
+            'Welcome ${apifind.username}',
+            style: const TextStyle(
+              fontFamily: 'Prompt',
+              color: Colors.white,
+              fontSize: 40
+            )
           )
         ],
       ),

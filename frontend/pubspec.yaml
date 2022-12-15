@@ -36,6 +36,8 @@ dependencies:
   google_nav_bar: ^5.0.6
   loading_overlay: ^0.2.1
   fluttertoast: ^8.1.2
+  salomon_bottom_bar: ^3.3.1
+  flutter_native_splash: ^2.2.16
     
 
 
@@ -61,6 +63,11 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/medical-team.png
+  fonts:
+    - family: Prompt
+      fonts: 
+        - asset: assets/fonts/prompt/Prompt-Bold.ttf
+          weight: 300
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

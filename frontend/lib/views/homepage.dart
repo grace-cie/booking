@@ -1,105 +1,97 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-// import 'dart:io';
-import 'package:google_nav_bar/google_nav_bar.dart';
-import 'tabs/home.dart';
-import 'tabs/profile.dart';
-import 'tabs/book.dart';
-import 'tabs/search.dart';
+import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
+import './tabs/home.dart';
+import './tabs/book.dart';
+import './tabs/search.dart';
+import './tabs/profile.dart';
+// import '../helpers/styles.dart';
 
 
-
-void main(){
-  runApp(const HomePage());
+void main() {
+  runApp(const Homepage());
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class Homepage extends StatefulWidget {
+  const Homepage({super.key});
+
+  // static final title = 'salomon_bottom_bar';
 
   @override
-  State<StatefulWidget> createState() => HomePageState();
+  HomepageState createState() => HomepageState();
 }
 
+class HomepageState extends State<Homepage> {
 
-class HomePageState extends State<HomePage>{
-  Future<bool> _onWillPop() async {
-    return (
-      await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Are you sure?'),
-          content: const Text('Do you want to exit an App'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false), //<-- SEE HERE
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => SystemNavigator.pop(), // <-- SEE HERE
-              child: const Text('Yes'),
-            ),
-          ],
-        ),
-      )
-    ) ?? false;
-  }
-  
-  int _selectedIndex = 0;
-  static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  
-  static final List<Widget> _widgetOptions = <Widget>[
 
-    const HomeUi(),
+  var _currentIndex = 0;
+  static const TextStyle optionStyle = TextStyle(fontWeight: FontWeight.bold, color: Color.fromRGBO(25, 20, 48, 1));
+  static const baseColor = Color.fromRGBO(109, 85, 246, 1);
 
-    const BookUi(),
+  static const List<Widget> _widgetOptions = <Widget>[
+    HomeUi(),
 
-    const SearchDoctorUi(),
+    BookUi(),
+
+    SearchDoctorUi(),
     
-    const ProfileUi()
-    
+    ProfileUi()
   ];
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        onWillPop: _onWillPop,
-        child: Scaffold(
-          body: Center(
-          child: _widgetOptions.elementAt(_selectedIndex),
+    return MaterialApp(
+      // title: Homepage.title,
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: Scaffold(
+        // appBar: AppBar(
+        //   title: Text(Homepage.title),
+        // ),
+        body: Center(
+          child: _widgetOptions.elementAt(_currentIndex),
         ),
-        bottomNavigationBar: GNav(
-          tabBorderRadius: 15, 
-          gap: 8, // the tab button gap between icon and text 
-          color: Colors.white60, // unselected icon color
-          activeColor: Colors.white, // selected icon and text color
-          iconSize: 24, // tab button icon size
-          backgroundColor: const Color.fromARGB(255, 109, 140, 201),
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15), 
-          tabs: const [
-            GButton(
-              icon: Icons.home_rounded,
-              text: 'Home',
-              style: GnavStyle.oldSchool,
+        bottomNavigationBar: SalomonBottomBar(
+          currentIndex: _currentIndex,
+          onTap: (i) => setState(() => _currentIndex = i),
+          items: [
+            SalomonBottomBarItem(
+              icon: const Icon(Icons.home_rounded),
+              title: const Text(
+                "Home",
+                style: optionStyle,
+              ),
+              selectedColor: baseColor
             ),
-            GButton(
-              icon: Icons.edit_calendar_outlined,
-              text: 'Book Now',
+
+            SalomonBottomBarItem(
+              icon: const Icon(Icons.edit_calendar_outlined),
+              title: const Text(
+                "Book Now",
+                style: optionStyle,
+              ),
+              selectedColor: baseColor
             ),
-            GButton(
-              icon: Icons.search,
-              text: 'Find Doctors',
+
+            SalomonBottomBarItem(
+              icon: const Icon(Icons.search),
+              title: const Text(
+                "Find Doctors",
+                style: optionStyle,
+              ),
+              selectedColor: baseColor
             ),
-            GButton(
-              icon: Icons.account_circle_sharp,
-              text: 'Profile',
-            )
+
+            SalomonBottomBarItem(
+              icon: const Icon(Icons.person),
+              title: const Text(
+                "Profile",
+                style: optionStyle,
+              ),
+              selectedColor: baseColor
+            ),
           ],
-          onTabChange: (int i) {
-            print(i);
-            setState(() {
-              _selectedIndex = i;
-            });
-          },
         ),
       ),
     );

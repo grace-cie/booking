@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,22 @@ import './homepage.dart';
 
 void main(){
   runApp(const MainForm());
+}
+
+class AuthRes{
+  final String JwtToken;
+
+  const AuthRes({
+    required this.JwtToken,
+  });
+
+  Map<String, dynamic> toJson() => {
+    "JwtToken" : JwtToken,
+  };
+
+  factory AuthRes.fromJson(Map<String, dynamic> json){
+    return AuthRes(JwtToken: json['JwtToken']);
+  }
 }
 
 class MainForm extends StatefulWidget {
@@ -21,7 +39,7 @@ class MainFormState extends State<MainForm>{
   final apihandler = Get.put(ApiHandler());
   bool isLoading = false;
 
-  postTest(String email, String password)async{
+  Future<AuthRes> postTest(String email, String password)async{
     setState(() {
       isLoading = true;
     });
@@ -29,7 +47,7 @@ class MainFormState extends State<MainForm>{
     map['email'] = email;
     map['password'] = password;
     // map['email'] = 'rirei1415@mailinator.com';
-    // map['password'] = '123456789';
+    // map['password'] = '12345678';
 
     final response = await http.post(
       Uri.parse('${apihandler.url}/auth/login'),
@@ -47,8 +65,13 @@ class MainFormState extends State<MainForm>{
       );
       print('error');
       print(map);
+
+      throw Exception('Failed');
     } else {
-      apihandler.login(response.body);
+      Map<String, dynamic> map = json.decode(response.body);
+      var tokin = map["access_token"];
+      apihandler.getToken(tokin);
+      
       await Future.delayed(const Duration(seconds: 1)).then((_){
         // ignore: use_build_context_synchronously
         Navigator.push(
@@ -56,16 +79,19 @@ class MainFormState extends State<MainForm>{
           MaterialPageRoute(
             builder: (
               BuildContext context
-            ) => const HomePage()
+            ) => const Homepage()
           )
         );
       });
+      return AuthRes.fromJson(tokin);
+      
+
         
       
     }
-    print(map);
+    // print(map);
 
-    // print(response.body);
+    // // print(response.body);
   }
 
   @override
@@ -105,8 +131,6 @@ class MainFormState extends State<MainForm>{
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please Enter Email';
-                      } else {
-
                       }
                       return null;
                     },

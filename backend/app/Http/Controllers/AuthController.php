@@ -156,14 +156,15 @@ class AuthController extends Controller
     }
 
     public function me(){
-        $user_course_id = Auth::user()->course_id;
-        $res = $this->courseDetails($user_course_id);
-        return response()->json([
-            "user details" => [
-                "name" => Auth::user()->name,
-                "course" => $res,
-                "status" => Auth::user()->status],
-        ]);
+        $user = Auth::user();
+        return response()->json($user);
+        // $res = $this->courseDetails($user_course_id);
+        // return response()->json([
+        //     "user details" => [
+        //         "name" => Auth::user()->name,
+        //         "course" => $res,
+        //         "status" => Auth::user()->status],
+        // ]);
     }
 
     public function logout(Request $request){

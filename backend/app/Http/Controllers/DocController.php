@@ -14,11 +14,11 @@ class DocController extends AuthController {
 
      public function __construct(){
           $this->middleware('auth:api', ['except' => [
-               'getDoctors'
+               // 'getDoctors'
           ]]);
      }
      public function getDoctors(){
-          $doctors = DB::select("select * from users where user_class='doctor' limit 5");
+          $doctors = DB::select("select * from users where user_class='doctor' limit 6");
           $res = response()->json($doctors);
           return $res;
      }

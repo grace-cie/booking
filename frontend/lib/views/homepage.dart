@@ -22,25 +22,24 @@ class Homepage extends StatefulWidget {
 
 class HomepageState extends State<Homepage> {
 
-
   var _currentIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontWeight: FontWeight.bold, color: Color.fromRGBO(25, 20, 48, 1));
   static const baseColor = Color.fromRGBO(109, 85, 246, 1);
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeUi(),
+  static final List<Widget> _widgetOptions = <Widget>[
+    const HomeUi(),
 
-    BookUi(),
+    const BookUi(),
 
-    SearchDoctorUi(),
+    const SearchDoctorUi(),
     
-    ProfileUi()
+    const ProfileUi()
   ];
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // title: Homepage.title,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,

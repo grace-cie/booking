@@ -9,7 +9,12 @@ import 'package:http/http.dart' as http;
 import './homepage.dart';
 
 void main(){
-  runApp(const MainForm());
+  runApp(
+    const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MainForm(),
+    )
+  );
 }
 
 class AuthRes{
@@ -38,8 +43,20 @@ class MainForm extends StatefulWidget {
 class MainFormState extends State<MainForm>{
   final apihandler = Get.put(ApiHandler());
   bool isLoading = false;
+  static const maincolor = Color.fromRGBO(109, 85, 246, 1);
+  static const basecolor = Color.fromRGBO(26, 26, 56, 1);
+  static const grey = Color.fromRGBO(113, 114, 133, 1);
+  static const white = Color.fromRGBO(255, 255, 255, 1);
+  static const customerr = TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.w100);
+  static const customborder =  OutlineInputBorder(
+    borderSide: BorderSide(
+      width: 1,
+      color: grey
+    )
+  );
 
   Future<AuthRes> postTest(String email, String password)async{
+    apihandler.emailSave(email);
     setState(() {
       isLoading = true;
     });
@@ -71,8 +88,9 @@ class MainFormState extends State<MainForm>{
       Map<String, dynamic> map = json.decode(response.body);
       var tokin = map["access_token"];
       apihandler.getToken(tokin);
-      
-      await Future.delayed(const Duration(seconds: 1)).then((_){
+      apihandler.loginUser();
+
+      await Future.delayed(const Duration(seconds: 2)).then((_){
         // ignore: use_build_context_synchronously
         Navigator.push(
           context, 
@@ -84,28 +102,37 @@ class MainFormState extends State<MainForm>{
         );
       });
       return AuthRes.fromJson(tokin);
-      
-
-        
-      
     }
-    // print(map);
-
-    // // print(response.body);
+  }
+  
+  String? validateEmail(String? value) {
+    String pattern =
+        r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]"
+        r"{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]"
+        r"{0,253}[a-zA-Z0-9])?)*$";
+    RegExp regex = RegExp(pattern);
+    if (value == null || value.isEmpty || !regex.hasMatch(value)) {
+      return 'Enter a valid email address';
+    } else {
+      return null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    ApiHandler apifind = Get.find<ApiHandler>();
     final formKey = GlobalKey<FormState>();
-    final _email = TextEditingController();
+    final _email = TextEditingController(text: apifind.emailsave);
     final _password = TextEditingController();
+    
     return Scaffold(
+      backgroundColor: white,
       // appBar: AppBar(
       //   title: const Text('Login'),
       // ),
       body: LoadingOverlay(
         isLoading: isLoading,
-        color:  const Color.fromARGB(255, 252, 252, 252),
+        color: white,
         opacity: 0.5,
         child: Form(
           key: formKey,
@@ -122,18 +149,22 @@ class MainFormState extends State<MainForm>{
                 Padding(
                   padding: const EdgeInsets.all(10),
                   child: TextFormField(
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     controller: _email,
                     decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.mail, color: maincolor),
+                      enabledBorder: customborder,
+                      focusedBorder: customborder,
+                      errorBorder: customborder,
+                      errorStyle: customerr,
+                      focusedErrorBorder: customborder,
                       labelText: 'Email',
-                      hintText: 'Enter Email'
+                      labelStyle: TextStyle(
+                        color: grey,
+                        fontFamily: 'Prompt'
+                      )
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please Enter Email';
-                      }
-                      return null;
-                    },
+                    validator: (value) => validateEmail(value)
                   ),
                 ),
                 Padding(
@@ -142,13 +173,24 @@ class MainFormState extends State<MainForm>{
                     controller: _password,
                     obscureText: true,
                     decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.lock_rounded, color: maincolor),
                       border: OutlineInputBorder(),
+                      enabledBorder: customborder,
+                      focusedBorder: customborder,
+                      errorBorder: customborder,
+                      errorStyle: customerr,
+                      focusedErrorBorder: customborder,
                       labelText: 'Password',
-                      hintText: 'Enter your password'
+                      labelStyle: TextStyle(
+                        color: grey,
+                        fontFamily: 'Prompt'
+                      )
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please Enter Password';
+                      } else if (value.length <= 5){
+                        return 'Password must be more than 5 characters';
                       }
                       return null;
                     },
@@ -166,7 +208,12 @@ class MainFormState extends State<MainForm>{
                     }, 
                     child: const Text(
                       'Forgot password',
-                      style: TextStyle(color: Colors.blue, fontSize: 15),
+                      style: TextStyle(
+                        color: basecolor, 
+                        fontSize: 18,
+                        fontWeight: FontWeight.w100,
+                        fontFamily: 'Prompt'
+                      ),
                     )
                   ),
                 ),
@@ -174,7 +221,7 @@ class MainFormState extends State<MainForm>{
                   height: 50,
                   width: 250,
                   decoration: BoxDecoration(
-                    color: Colors.blue, borderRadius: BorderRadius.circular(20),
+                    color: maincolor, borderRadius: BorderRadius.circular(40),
                   ),
                   child: TextButton(
                     onPressed: (){
@@ -184,7 +231,11 @@ class MainFormState extends State<MainForm>{
                     },
                     child: const Text(
                       'Login',
-                      style: TextStyle(color: Colors.white, fontSize: 25),
+                      style: TextStyle(
+                        color: white,
+                        fontSize: 25,
+                        fontFamily: 'Prompt'
+                      ),
                     ),
                   ),
                 ),

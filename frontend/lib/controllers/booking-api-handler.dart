@@ -8,33 +8,47 @@ import 'package:http/http.dart' as http;
 class ApiHandler extends GetxController {
   var url = 'http://192.168.254.103:8000';
 
-
-
-  login(String name){
-    // username = name;
-    
-  }
-
-
   var accesstoken = '';
-  var username = '';
-  getToken(String token) async {
+    getToken(String token){
     accesstoken = token;
+  }
+    
+  var username = '';
+  loginUser()async{
     final response = await http.post(
       Uri.parse('$url/auth/user-profile'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Authorization': 'Bearer $accesstoken',
       }
     );
-    if(response.statusCode != 200){
-      throw Exception('Failed');
-    } else {
-      Map<String, dynamic> map = json.decode(response.body);
-      username = map['user_name'];
-    }
-    // result =  (response.body);
+    Map<String, dynamic> map = json.decode(response.body);
+    username = map['user_name'];
+    print(username);
   }
+
+  var emailsave = '';
+  emailSave(String email){
+    emailsave = email;
+  }
+
+  // var doctors = '';
+  // loadDoctors()async{
+  //   final response = await http.post(
+  //     Uri.parse('$url/auth/doctors'),
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Accept': 'application/json',
+  //       'Authorization': 'Bearer $accesstoken',
+  //     }
+  //   );
+  //   Map<String, dynamic> map = json.decode(response.body);
+  //   print(map);
+  //   // doctors = map['user_'];
+  //   // print('Doctors: $map');
+  // }
+
+
 }
 

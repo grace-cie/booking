@@ -13,12 +13,11 @@ class HomeUi extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => HomeUiState();
 }
+ApiHandler apifind = Get.find<ApiHandler>();
 
 class HomeUiState extends State<HomeUi>{
-  ApiHandler apifind = Get.find<ApiHandler>();
-
-
-
+  
+  var username = apifind.username;
   @override
   Widget build(BuildContext context) {
     // getUserData();
@@ -30,7 +29,7 @@ class HomeUiState extends State<HomeUi>{
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Welcome ${apifind.username}',
+            'Welcome $username',
             style: const TextStyle(
               fontFamily: 'Prompt',
               color: Colors.white,

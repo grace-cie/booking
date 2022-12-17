@@ -38,6 +38,7 @@ dependencies:
   fluttertoast: ^8.1.2
   salomon_bottom_bar: ^3.3.1
   flutter_native_splash: ^2.2.16
+  loading_indicator: ^3.1.0
     
 
 
@@ -63,6 +64,8 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/medical-team.png
+    - assets/images/doctor.png
+    - assets/images/doctor2.png
   fonts:
     - family: Prompt
       fonts: 

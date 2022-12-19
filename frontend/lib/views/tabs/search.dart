@@ -1,12 +1,15 @@
+import 'package:flutter/cupertino.dart';
+
 import '../../helpers/styles.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/views/forms.dart';
 import 'package:get/get.dart';
 import 'package:frontend/controllers/booking-api-handler.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 
 
 
@@ -182,127 +185,191 @@ class SearchDoctorUiState extends State<SearchDoctorUi>{
                     return GridView.builder(
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        return Card(
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                child: ListTile(
-                                  isThreeLine: true,
-                                  trailing: const InkWell(
-                                    // onTap: ,
-                                    child: Icon(Icons.favorite_border),
-                                  ),
-                                  leading: Image.asset('assets/images/doctor2.png', scale: 13,),
-                                  title: Text(
-                                    snapshot.data![index].username,
-                                    style: const TextStyle(
-                                      color: styles.basecolor, 
-                                      fontFamily: 'Prompt',
-                                      fontSize: 14
+                        return SizedBox(
+                          height: 0,
+                          child: Card(
+                            clipBehavior: Clip.antiAliasWithSaveLayer,
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                  child: ListTile(
+                                    isThreeLine: true,
+                                    trailing: InkWell(
+                                      onTap: () {
+                                        Fluttertoast.showToast(
+                                          msg: 'Add to favorites',
+                                          // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
+                                          textColor: Colors.white,
+                                        );
+                                      },
+                                      child: const Icon(Icons.favorite_border),
                                     ),
-                                  ),
-                                  subtitle: Text(
-                                    snapshot.data![index].userclass,
-                                    style: TextStyle(
-                                      color: styles.black.withOpacity(0.6), 
-                                      fontFamily: 'Prompt',
-                                      fontSize: 11,
+                                    leading: Image.asset('assets/images/doctor2.png', scale: 13,),
+                                    title: Text(
+                                      snapshot.data![index].username,
+                                      style: const TextStyle(
+                                        color: styles.basecolor, 
+                                        fontFamily: 'Prompt',
+                                        fontSize: 14
+                                      ),
                                     ),
-                                  ),
-                                ),
-                              ),
-                              Flexible(
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                                  child: Text(
-                                    snapshot.data![index].bio,
-                                    style: TextStyle(
-                                      color: styles.black.withOpacity(0.6),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold
+                                    subtitle: Text(
+                                      snapshot.data![index].userclass,
+                                      style: TextStyle(
+                                        color: styles.black.withOpacity(0.6), 
+                                        fontFamily: 'Prompt',
+                                        fontSize: 11,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: styles.white.withOpacity(0.5),
-                                      spreadRadius: 20,
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3)
-                                    )
-                                  ]
-                                ),
-                                child: ButtonBar(
-                                  alignment: MainAxisAlignment.spaceBetween,
+                                Row(
                                   children: [
-                                    SizedBox(
-                                      height: 35,
-                                      child: TextButton.icon(
-                                        icon: const Icon(
-                                          Icons.account_circle, 
-                                          size: 17, 
-                                          color: styles.maincolor,
-                                        ),
-                                        onPressed: () {},
-                                        label: const Text(
-                                          'Profile',
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                                        child: Text(
+                                          snapshot.data![index].bio,
                                           style: TextStyle(
-                                            fontFamily: 'Prompt',
-                                            color: styles.basecolor
+                                            color: styles.black.withOpacity(0.6),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold
                                           ),
+                                          maxLines: 4
                                         ),
-                                      ),
+                                      )  
                                     ),
-                                    SizedBox(
-                                      height: 35,
-                                      child: TextButton.icon(
-                                        icon: const Icon(
-                                          Icons.calendar_month, 
-                                          size: 17,
-                                          color: styles.maincolor
-                                        ),
-                                        onPressed: () {},
-                                        label: const Text(
-                                          'Book',
-                                          style: TextStyle(
-                                            fontFamily: 'Prompt',
-                                            color: styles.basecolor
-                                          ),
-                                        ),
-                                      ),
-                                    )
                                   ],
                                 ),
-                              )
-                              
-                                // Image.asset('assets/images/image.jpg', scale: 2,)
-                              // Container(
-                              //   padding: const EdgeInsets.all(10),
-                              //   decoration: BoxDecoration(
-                              //     borderRadius: BorderRadius.circular(10),
-                              //     // color: styles.white,
-                              //     boxShadow: [
-                              //       BoxShadow(
-                              //         color: styles.black.withOpacity(0.5),
-                              //         spreadRadius: 1,
-                              //         blurRadius: 10,
-                              //         offset: const Offset(0, 3)
-                              //       )
-                              //     ]
-                              //   ),
-                              //   // child: Text(snapshot.data![index].username),
-                              // ),
-                            ],
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                  child: SizedBox(
+                                    height: 30,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.fromLTRB(9, 0, 0, 0),
+                                          child: Row(
+                                            children: [
+                                              InkWell(
+                                                onTap: (){
+                                                  Fluttertoast.showToast(
+                                                    msg: 'Profile Button',
+                                                    // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
+                                                    textColor: Colors.white,
+                                                  );
+                                                },
+                                                splashColor: styles.grey,
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    Row(
+                                                      children: const [
+                                                        Padding(
+                                                          padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                                          child: Icon(Icons.account_box_rounded, 
+                                                          size: 20,
+                                                          color: styles.maincolor,
+                                                        ),
+                                                        ),
+                                                        Padding(
+                                                          padding: EdgeInsets.fromLTRB(0, 0, 5, 0),
+                                                          child: Text(
+                                                            'Profile',
+                                                            style: TextStyle(
+                                                              fontFamily: 'Prompt',
+                                                              color: styles.basecolor,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              InkWell(
+                                                onTap: (){
+                                                  showBarModalBottomSheet(
+                                                    isDismissible: true,
+                                                    context: context, 
+                                                    builder: (BuildContext context) {
+                                                      return Container(
+                                                        height: 500,
+                                                        color: Colors.amber,
+                                                        child: Column(
+                                                            mainAxisAlignment: MainAxisAlignment.start,
+                                                            // mainAxisSize: MainAxisSize.min,
+                                                            children: <Widget>[
+                                                              Row(
+                                                                children: <Widget>[
+                                                                  ElevatedButton(
+                                                                    child: const Text('Close BottomSheet'),
+                                                                    onPressed: () => Navigator.pop(context),
+                                                                  ),
+                                                                ],
+                                                              )
+                                                              // const Text('Modal BottomSheet'),
+                                                              
+                                                            ],
+                                                          ),
+                                                        // child: Center(
+                                                          
+                                                        // ),
+                                                      );
+                                                    },
+                                                    // isScrollControlled: true
+                                                  );
+                                                  // Fluttertoast.showToast(
+                                                  //   msg: 'Book Button',
+                                                  //   // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
+                                                  //   textColor: Colors.white,
+                                                  // );
+                                                },
+                                                splashColor: styles.grey,
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    Row(
+                                                      children: const [
+                                                        Padding(
+                                                          padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                                          child: Icon(Icons.calendar_month_rounded, 
+                                                          size: 20,
+                                                          color: styles.maincolor,
+                                                        ),
+                                                        ),
+                                                        Padding(
+                                                          padding: EdgeInsets.fromLTRB(0, 0, 5, 0),
+                                                          child: Text(
+                                                            'Book',
+                                                            style: TextStyle(
+                                                              fontFamily: 'Prompt',
+                                                              color: styles.basecolor,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        )
+                                      ],
+                                    )
+                                  )
+                                )
+                              ],
+                            ),
+                            // title: Text(snapshot.data![index].username),
+                            // subtitle: Text(snapshot.data![index].email),
+                            // trailing: Text(snapshot.data![index].userclass),
                           ),
-                          // title: Text(snapshot.data![index].username),
-                          // subtitle: Text(snapshot.data![index].email),
-                          // trailing: Text(snapshot.data![index].userclass),
                         );
+                        
                       }, 
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,

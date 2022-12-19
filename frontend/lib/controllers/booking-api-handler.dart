@@ -1,15 +1,20 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:get/state_manager.dart';
 import 'package:http/http.dart' as http;
+import '../storage/storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
-class ApiHandler extends GetxController {
-  var url = 'http://192.168.254.103:8000';
+
+class ApiHandler extends FullLifeCycleController {
+  var url = 'http://192.168.254.102:8000';
+  
 
   var accesstoken = '';
-    getToken(String token){
+  getToken(String token) async {
     accesstoken = token;
   }
     
@@ -29,8 +34,32 @@ class ApiHandler extends GetxController {
   }
 
   var emailsave = '';
-  emailSave(String email){
+  emailSave(String email) async {
     emailsave = email;
+    MyStorage.setPref(email);
+    // print(emailpref);
+  }
+
+  bool isloggedin = false;
+  autologin() async {
+    var emailpref = await MyStorage.getPref();
+    var map = <String, dynamic>{};
+    map['email'] = emailpref;
+    final response = await http.post(
+      Uri.parse('$url/auth/checkmail'),
+      body: map
+    );
+    // print(map);
+    // print(response.body);
+    if(response.statusCode == 200){
+      Map<String, dynamic> bodymap = json.decode(response.body);
+      var newtoken = bodymap['token'];
+      accesstoken = newtoken;
+      isloggedin = true;
+    } else {
+      isloggedin = false;
+    }
+    
   }
 
   // var doctors = '';
@@ -48,7 +77,4 @@ class ApiHandler extends GetxController {
   //   // doctors = map['user_'];
   //   // print('Doctors: $map');
   // }
-
-
 }
-

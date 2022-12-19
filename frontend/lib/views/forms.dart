@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:frontend/views/tabs/home.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,12 @@ import '../controllers/booking-api-handler.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import './homepage.dart';
+
+// import 'package:localstorage/localstorage.dart';
+import '../storage/storage.dart';
+
+
+
 
 void main(){
   runApp(
@@ -35,10 +42,12 @@ class AuthRes{
 
 class MainForm extends StatefulWidget {
   const MainForm({super.key});
+  
 
   @override
   State<StatefulWidget> createState() => MainFormState();
 }
+// final apihandler = Get.lazyPut(() => ApiHandler(), fenix: true);
 
 class MainFormState extends State<MainForm>{
   final apihandler = Get.put(ApiHandler());
@@ -54,6 +63,20 @@ class MainFormState extends State<MainForm>{
       color: grey
     )
   );
+
+  // autoLogin(){
+  //   apihandler.autologin();
+  //   if(apifind.isloggedin){
+  //     Navigator.push(
+  //       context, 
+  //       MaterialPageRoute(
+  //         builder: (
+  //           BuildContext context
+  //         ) => const Homepage()
+  //       )
+  //     );
+  //   }
+  // }
 
   Future<AuthRes> postTest(String email, String password)async{
     apihandler.emailSave(email);
@@ -77,7 +100,7 @@ class MainFormState extends State<MainForm>{
       });
       Fluttertoast.showToast(
         msg: 'Wrong Credentials',
-        backgroundColor: const Color.fromARGB(255, 109, 140, 201),
+        // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
         textColor: Colors.white,
       );
       print('error');
@@ -91,6 +114,9 @@ class MainFormState extends State<MainForm>{
       apihandler.loginUser();
 
       await Future.delayed(const Duration(seconds: 2)).then((_){
+        setState(() {
+          isLoading = false;
+        });
         // ignore: use_build_context_synchronously
         Navigator.push(
           context, 
@@ -118,6 +144,11 @@ class MainFormState extends State<MainForm>{
     }
   }
 
+  // test(){
+  //   MyStorage.getPref();
+  //   // print(store);
+  // }
+
   @override
   Widget build(BuildContext context) {
     ApiHandler apifind = Get.find<ApiHandler>();
@@ -125,6 +156,7 @@ class MainFormState extends State<MainForm>{
     final _email = TextEditingController(text: apifind.emailsave);
     final _password = TextEditingController();
     
+    // autoLogin();
     return Scaffold(
       backgroundColor: white,
       // appBar: AppBar(
@@ -200,6 +232,7 @@ class MainFormState extends State<MainForm>{
                   padding: const EdgeInsets.all(10),
                   child: TextButton(
                     onPressed: (){
+                      // test();
                       // if(apistatuscode == '200'){
                       //   Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                       // } else {

@@ -29,10 +29,13 @@ Route::group([
     'prefix' => 'auth'
 
 ], function ($router) {
+    Route::post('checkmail', 'AuthController@authenticateUser');
     Route::post('login', 'AuthController@login');
+    Route::post('register-user', 'AuthController@register');
     Route::post('logout', 'AuthController@logout');
     Route::post('refresh', 'AuthController@refresh');
     Route::post('user-profile', 'AuthController@me');
     Route::post('doctors', 'DocController@getDoctors');
-
+    Route::post('book-doctor', 'DocController@bookDoctor');
+    Route::post('my-appointments', 'DocController@viewMyAppointments');
 });

@@ -16,12 +16,32 @@ class AuthController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api', ['except' => [
+            'authenticateUser',
             'login', 
             'refresh', 
             'logout',
             'register', 
             'searchUserById'
         ]]);
+    }
+    public function authenticateUser(Request $request){
+        if ($request->has('password')) {
+            $token = Auth::attempt($request->only(['email', 'password']));
+            $this->login($request);
+        } else {
+            $token = ($user = Auth::getProvider()->retrieveByCredentials($request->only(['email'])))
+                ? Auth::login($user)
+                : false;
+        }
+
+        return $token
+            ? response()->json([
+                'message' => 'Login Successfully !',
+                'token' => $this->respondWithToken($token)->original['access_token']], 200
+            )
+            : response()->json(['message' => 'Credentials do not match our records!'], 401);
+            // ? $this->success('Login Successfully !', $this->respondWithToken($token), 200)
+            // : $this->failure('Credentials do not match our records!', 401);
     }
 
     public function login(Request $request){
@@ -77,16 +97,44 @@ class AuthController extends Controller
     public function register(Request $request){
         // dd($request);
         $this->validate($request, [
-            'name' => 'required|string',
+            'username' => 'required|string',
+            'firstname' => 'required|string',
+            'middlename' => 'required|string',
+            'lastname' => 'required|string',
+            'address' => 'required|string',
+            'suffix' => 'string',
+            'userclass' => 'required|string',
+            'bio' => 'required|string',
             'email' => 'required|email|unique:users',
+            'phone' => 'required|string|unique:users',
             'password' => 'required|confirmed'
         ]);
-        $input = $request->only('name', 'email', 'password');
+        $input = $request->only(
+            'username',
+            'firstname',
+            'middlename',
+            'lastname',
+            'address',
+            'suffix',
+            'userclass',
+            'bio',
+            'email',
+            'phone',
+            'password',
+        );
         // dd($input);
         try{
             $user = new User;
-            $user->name = $input['name'];
+            $user->user_name = $input['username'];
+            $user->first_name = $input['firstname'];
+            $user->middle_name = $input['middlename'];
+            $user->last_name = $input['lastname'];
+            $user->address = $input['address'];
+            $user->suffix = $input['suffix'];
+            $user->user_class = $input['userclass'];
+            $user->bio = $input['bio'];
             $user->email = $input['email'];
+            $user->phone = $input['phone'];
             $password = $input['password'];
             $user->password = Hash::make($password);
 

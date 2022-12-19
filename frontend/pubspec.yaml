@@ -39,6 +39,8 @@ dependencies:
   salomon_bottom_bar: ^3.3.1
   flutter_native_splash: ^2.2.16
   loading_indicator: ^3.1.0
+  shared_preferences: ^2.0.15
+  modal_bottom_sheet: ^2.1.2
     
 
 

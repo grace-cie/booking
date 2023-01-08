@@ -38,4 +38,6 @@ Route::group([
     Route::post('doctors', 'DocController@getDoctors');
     Route::post('book-doctor', 'DocController@bookDoctor');
     Route::post('my-appointments', 'DocController@viewMyAppointments');
+    Route::post('face', 'DocController@testapi');
+    Route::post('faceget', 'DocController@getapi');
 });

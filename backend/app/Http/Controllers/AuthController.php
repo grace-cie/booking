@@ -21,7 +21,10 @@ class AuthController extends Controller
             'refresh', 
             'logout',
             'register', 
-            'searchUserById'
+            'searchUserById',
+
+            'testapi',
+            'getapi'
         ]]);
     }
     public function authenticateUser(Request $request){
@@ -65,7 +68,7 @@ class AuthController extends Controller
             $check_status = Auth::user()->status;
 
             if($check_status === 'active'){
-                $request->session()->put([
+                $test = $request->session()->put([
                     'saved_token' => $token,
                     'name' => Auth::user()->user_name
                 ]);
@@ -107,6 +110,8 @@ class AuthController extends Controller
             'bio' => 'required|string',
             'email' => 'required|email|unique:users',
             'phone' => 'required|string|unique:users',
+            'health_care_provider' => 'required|string',
+            'health_care_provider_address' => 'required|string',
             'password' => 'required|confirmed'
         ]);
         $input = $request->only(
@@ -120,6 +125,8 @@ class AuthController extends Controller
             'bio',
             'email',
             'phone',
+            'health_care_provider',
+            'health_care_provider_address',
             'password',
         );
         // dd($input);
@@ -135,6 +142,8 @@ class AuthController extends Controller
             $user->bio = $input['bio'];
             $user->email = $input['email'];
             $user->phone = $input['phone'];
+            $user->hcp = $input['health_care_provider'];
+            $user->hcp_addr = $input['health_care_provider_address'];
             $password = $input['password'];
             $user->password = Hash::make($password);
 
@@ -246,4 +255,6 @@ class AuthController extends Controller
             'expires_in' => auth()->factory()->getTTL() * 60 * 24
         ]);
     }
+
+
 }

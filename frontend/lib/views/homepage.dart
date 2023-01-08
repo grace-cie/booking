@@ -5,7 +5,7 @@ import './tabs/home.dart';
 import './tabs/book.dart';
 import './tabs/search.dart';
 import './tabs/profile.dart';
-// import '../helpers/styles.dart';
+import '../helpers/styles.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import 'package:frontend/controllers/booking-api-handler.dart';
@@ -22,6 +22,7 @@ class Homepage extends StatefulWidget {
   HomepageState createState() => HomepageState();
 }
 
+final apihandler = Get.put(ApiHandler());
 ApiHandler apifind = Get.find<ApiHandler>();
 
 logout() async {
@@ -43,23 +44,34 @@ class HomepageState extends State<Homepage> {
       await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Are you sure?'),
-          content: const Text('Do you want to exit an App'),
+          title: const Text(
+            'Hold on!',
+            style: TextStyle(fontFamily: 'Prompt'),
+          ),
+          content: const Text(
+            'Are you sure do you want to Logout?',
+            style: TextStyle(fontFamily: 'Prompt', color: styles.grey),
+          ),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: const Text('No'),
+              child: const Text(
+                'NO',
+                style: TextStyle(fontFamily: 'Prompt'),
+              ),
             ),
             TextButton(
-              
               onPressed: () {
                 logout();
                 Navigator.of(context).pop(true);
               },
               // onPressed: () => SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
-              child: const Text('Yes'),
+              child: const Text(
+                'LOGOUT',
+                style: TextStyle(color: styles.red, fontFamily: 'Prompt'),
+              ),
             ),
           ],
         ),
@@ -67,7 +79,7 @@ class HomepageState extends State<Homepage> {
     ) ?? false;
   }
 
-  var _currentIndex = 0;
+  static var currentIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontWeight: FontWeight.bold, color: Color.fromRGBO(25, 20, 48, 1));
   static const baseColor = Color.fromRGBO(109, 85, 246, 1);
 
@@ -93,15 +105,18 @@ class HomepageState extends State<Homepage> {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: Scaffold(
+          // extendBodyBehindAppBar: false,
+          // resizeToAvoidBottomInset: true,
+          // extendBody: true,
           // appBar: AppBar(
           //   title: Text(Homepage.title),
           // ),
           body: Center(
-            child: _widgetOptions.elementAt(_currentIndex),
+            child: _widgetOptions.elementAt(currentIndex),
           ),
           bottomNavigationBar: SalomonBottomBar(
-            currentIndex: _currentIndex,
-            onTap: (i) => setState(() => _currentIndex = i),
+            currentIndex: currentIndex,
+            onTap: (i) => setState(() => currentIndex = i),
             items: [
               SalomonBottomBarItem(
                 icon: const Icon(Icons.home_rounded),
@@ -113,7 +128,36 @@ class HomepageState extends State<Homepage> {
               ),
 
               SalomonBottomBarItem(
-                icon: const Icon(Icons.edit_calendar_outlined),
+                icon: Stack(
+                  children: <Widget>[
+                    const Icon(Icons.edit_calendar_outlined),
+                    Positioned(  // draw a red marble
+                      top: 0,
+                      bottom: 1,
+                      left: 0,
+                      child: Stack(
+                        children: const [
+                          Icon(Icons.brightness_1, size: 15, 
+                            color: Colors.redAccent,
+                          ),
+                          Positioned(
+                            top: 2,
+                            left: 6,
+                            child: Text(
+                              '1',
+                              style: TextStyle(
+                                fontFamily: 'Prompt',
+                                color: styles.white,
+                                fontSize: 7
+                              ),
+                            )
+                          )
+                        ],
+                      )
+                      
+                    )
+                  ]
+                ),
                 title: const Text(
                   "Appointments",
                   style: optionStyle,

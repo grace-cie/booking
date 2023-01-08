@@ -1,5 +1,4 @@
-import 'package:flutter/cupertino.dart';
-
+import 'dart:async';
 import '../../helpers/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,12 +7,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:loading_indicator/loading_indicator.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:fluttertoast/fluttertoast.dart';  
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
-
-
-
-
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:strings/strings.dart';
+import 'package:rounded_loading_button/rounded_loading_button.dart';
 
 
 class Doctor {
@@ -29,6 +28,8 @@ class Doctor {
   final String phone;
   final String bio;
   final String status;
+  final String hcp;
+  final String hcpaddr;
   final String userclass;
   final String createdat;
 
@@ -45,6 +46,8 @@ class Doctor {
     required this.phone,
     required this.bio,
     required this.status,
+    required this.hcp,
+    required this.hcpaddr,
     required this.userclass,
     required this.createdat,
   });    
@@ -63,12 +66,83 @@ class Doctor {
       phone: json['phone'],
       bio: json['bio'],
       status: json['status'],
+      hcp: json['hcp'],
+      hcpaddr: json['hcp_addr'],
       userclass: json['user_class'],
       createdat: json['created_at'],
     );
   }
-  
-  // void add(List doctorslist) {}
+}
+
+class ProfileOverlay extends ModalRoute<void> {
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 200);
+
+  @override
+  bool get opaque => false;
+
+  @override
+  bool get barrierDismissible => false;
+
+  @override
+  Color get barrierColor => styles.maincolor;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  Widget buildPage(
+      BuildContext context,
+      Animation<double> animation,
+      Animation<double> secondaryAnimation,
+      ) {
+    // This makes sure that text and other content follows the material style
+    return Material(
+      type: MaterialType.transparency,
+      
+      // make sure that the overlay content is not cut off
+      child: FadeTransition(
+        opacity: animation,
+          child: SafeArea(
+          child: _buildOverlayContent(context),
+        ),
+      )
+    );
+  }
+
+  Widget _buildOverlayContent(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const Text(
+            'This is a nice overlay',
+            style: TextStyle(color: Colors.white, fontSize: 10.0),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Dismiss'),
+          )
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget buildTransitions(
+      BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+    // You can add your own animations for the overlay content
+    return FadeTransition(
+      opacity: animation,
+      child: ScaleTransition(
+        scale: animation,
+        child: child,
+      ),
+    );
+  }
 }
 
 void main(){
@@ -81,9 +155,17 @@ class SearchDoctorUi extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => SearchDoctorUiState();
 }
-
+final RoundedLoadingButtonController bookbutton = RoundedLoadingButtonController();
 final apihandler = Get.put(ApiHandler());
 ApiHandler apifind = Get.find<ApiHandler>();
+var datenow = DateTime.now();
+var yearnow = DateFormat('yyyy').format(datenow);
+var mthnow = DateFormat('MM').format(datenow);
+var today = datenow.day;
+var lastday = DateTime(datenow.year, datenow.month + 1, 0).day;
+DateFormat formatter = DateFormat('yyyy-MM-dd');
+DateFormat timeformatter = DateFormat('HH:mm:ss');
+DateFormat timeformatjm = DateFormat('jm');
 
 Future<List<Doctor>> getDoctors() async {
   var token = apifind.accesstoken;
@@ -111,6 +193,8 @@ Future<List<Doctor>> getDoctors() async {
         phone: u['phone'], 
         bio: u['bio'], 
         status: u['status'], 
+        hcp: u['hcp'],
+        hcpaddr: u['hcp_addr'],
         userclass: u['user_class'], 
         createdat: u['created_at']
       );
@@ -122,40 +206,67 @@ Future<List<Doctor>> getDoctors() async {
   }
 }
 
+void bookDoctor(context ,String doctorId, String scheduledIn, String status) async {
+  var token = apifind.accesstoken;
+  var map = <String, dynamic>{};
+    map['doctor_id'] = doctorId;
+    map['scheduled_in'] = scheduledIn;
+    map['status'] = status;
+  final response = await http.post(
+    Uri.parse('${apihandler.url}/auth/book-doctor'),
+    headers: {
+      'Authorization': 'Bearer $token',
+    },
+    body: map
+  );
+  Map<String, dynamic> mapp = await json.decode(response.body);
+  var message = mapp['message'];
+  if(response.statusCode == 200){
+    bookbutton.reset();
+    Fluttertoast.showToast(
+      msg: message,
+      // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
+      textColor: Colors.white,
+    );
+    Navigator.pop(context);
+  } else {
+    bookbutton.reset();
+    Fluttertoast.showToast(
+      msg: message,
+      // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
+      textColor: Colors.white,
+    );
+  }
+}
+
 class SearchDoctorUiState extends State<SearchDoctorUi>{
   bool isLoading = false;
   late Future<List<Doctor>> doctorlist;
-  // static const maincolor = Color.fromRGBO(109, 85, 246, 1);
-  // static const basecolor = Color.fromRGBO(26, 26, 56, 1);
-  // static const grey = Color.fromRGBO(113, 114, 133, 1);
-  // static const white = Color.fromRGBO(255, 255, 255, 1);
-  // static const red = Color.fromARGB(255, 182, 26, 26);
-  // static const yellow = Color.fromARGB(255, 239, 246, 35);
-  // static const blue = Color.fromARGB(255, 0, 108, 248);
-  // static const customerr = TextStyle(fontFamily: 'Prompt', fontWeight: FontWeight.w100);
-  // static const customborder =  OutlineInputBorder(
-  //   borderSide: BorderSide(
-  //     width: 1,
-  //     color: grey
-  //   )
-  // );
 
   @override
   void initState() {
     super.initState();
     doctorlist = getDoctors();
   }
-  // cicularLoad(){
-  //   isLoading = true;
-  // }
+
+  void _showOverlay(BuildContext context) {
+    Navigator.of(context).push(ProfileOverlay());
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    TextEditingController datecont = TextEditingController();
+    TextEditingController timecont = TextEditingController();
+    TextEditingController validtime = TextEditingController();
+    
+    
     // apihandler.loadDoctors();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        extendBodyBehindAppBar: true,
         backgroundColor: styles.maincolor,
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(50), 
@@ -164,7 +275,7 @@ class SearchDoctorUiState extends State<SearchDoctorUi>{
             elevation: 0,
             centerTitle: true,
             title: const Text(
-              'Doctors',
+              'Popular Doctors',
               style: TextStyle(
                 fontFamily: 'Prompt',
                 color: styles.white,
@@ -254,13 +365,7 @@ class SearchDoctorUiState extends State<SearchDoctorUi>{
                                           child: Row(
                                             children: [
                                               InkWell(
-                                                onTap: (){
-                                                  Fluttertoast.showToast(
-                                                    msg: 'Profile Button',
-                                                    // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
-                                                    textColor: Colors.white,
-                                                  );
-                                                },
+                                                onTap: () => _showOverlay(context),
                                                 splashColor: styles.grey,
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -292,40 +397,295 @@ class SearchDoctorUiState extends State<SearchDoctorUi>{
                                               InkWell(
                                                 onTap: (){
                                                   showBarModalBottomSheet(
+                                                    shape: const Border(
+                                                      top: BorderSide(
+                                                        color: Colors.transparent,
+                                                        // width: 0.0,
+                                                      ),
+                                                      bottom: BorderSide(
+                                                        color: Colors.transparent,
+                                                        width: 0.0,
+                                                      ),
+                                                    ),
                                                     isDismissible: true,
                                                     context: context, 
                                                     builder: (BuildContext context) {
-                                                      return Container(
-                                                        height: 500,
-                                                        color: Colors.amber,
-                                                        child: Column(
+                                                      return SingleChildScrollView(
+                                                        child: Container(
+                                                          height: 500,
+                                                          color: styles.white,
+                                                          child: Column(
                                                             mainAxisAlignment: MainAxisAlignment.start,
-                                                            // mainAxisSize: MainAxisSize.min,
                                                             children: <Widget>[
                                                               Row(
                                                                 children: <Widget>[
-                                                                  ElevatedButton(
-                                                                    child: const Text('Close BottomSheet'),
-                                                                    onPressed: () => Navigator.pop(context),
-                                                                  ),
+                                                                  Expanded(
+                                                                    child: Padding(
+                                                                      padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                                                      child: SizedBox(
+                                                                        height: 455,
+                                                                        width: 300,
+                                                                        child: Column(
+                                                                          children: [
+                                                                            Padding(
+                                                                              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                                                              child: Card(
+                                                                                elevation: 0,
+                                                                                child: ListTile(
+                                                                                  leading: Image.asset('assets/images/doctor2.png', scale: 8,),
+                                                                                  title: Text(
+                                                                                    'About Doctor ${capitalize(snapshot.data![index].firstname)}',
+                                                                                    style: const TextStyle(
+                                                                                      fontFamily: 'Prompt',
+                                                                                      fontSize: 13,
+                                                                                      color: styles.basecolor
+                                                                                    ),
+                                                                                  ),
+                                                                                  subtitle: Text(
+                                                                                    'Dr. ${capitalize(snapshot.data![index].lastname)} is an experienced specialist who is constantly working on improving her skills.',
+                                                                                    style: const TextStyle(
+                                                                                      fontFamily: 'Prompt',
+                                                                                      fontWeight: FontWeight.w100,
+                                                                                      fontSize: 11,
+                                                                                      color: styles.grey
+                                                                                    ),
+                                                                                    maxLines: 4
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            Padding(
+                                                                              padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                                                                              child: Card(
+                                                                                elevation: 0,
+                                                                                child: ListTile(
+                                                                                  leading: Image.asset('assets/images/hospital.png', scale: 8,),
+                                                                                  title: Text(
+                                                                                    snapshot.data![index].hcp,
+                                                                                    style: const TextStyle(
+                                                                                      fontFamily: 'Prompt',
+                                                                                      fontSize: 13,
+                                                                                      color: styles.basecolor
+                                                                                    ),
+                                                                                  ),
+                                                                                  subtitle: Text(
+                                                                                    snapshot.data![index].hcpaddr,
+                                                                                    style: const TextStyle(
+                                                                                      fontFamily: 'Prompt',
+                                                                                      fontWeight: FontWeight.w100,
+                                                                                      fontSize: 11,
+                                                                                      color: styles.grey
+                                                                                    ),
+                                                                                    maxLines: 4
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            const Padding(
+                                                                              padding: EdgeInsets.fromLTRB(0, 10, 210, 0),
+                                                                              child: Text(
+                                                                                'Make an Appointment :',
+                                                                                style: TextStyle(
+                                                                                  fontFamily: 'Prompt',
+                                                                                  color: styles.darkergrey
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            Form(
+                                                                              key: formKey,
+                                                                              child: Column(
+                                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                children: [
+                                                                                  Padding(
+                                                                                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                                                                    child: Row(
+                                                                                      children: [
+                                                                                        Expanded(
+                                                                                          child: TextFormField(
+                                                                                            controller: datecont,
+                                                                                            onTap: () async {
+                                                                                              DatePicker.showDatePicker(
+                                                                                                  context,
+                                                                                                  showTitleActions: true,
+                                                                                                  minTime: DateTime(int.parse(yearnow), int.parse(mthnow), today),
+                                                                                                  maxTime: DateTime(int.parse(yearnow), int.parse(mthnow), lastday),
+                                                                                                  theme: const DatePickerTheme(
+                                                                                                    headerColor: styles.white,
+                                                                                                    backgroundColor: styles.white,
+                                                                                                    itemStyle: TextStyle(
+                                                                                                        color: styles.black,
+                                                                                                        fontWeight: FontWeight.bold,
+                                                                                                        fontSize: 18
+                                                                                                    ),
+                                                                                                    doneStyle: TextStyle(
+                                                                                                      color: styles.black, 
+                                                                                                      fontSize: 16,
+                                                                                                      fontFamily: 'Prompt'
+                                                                                                    ),
+                                                                                                    cancelStyle: TextStyle(
+                                                                                                      color: styles.red, 
+                                                                                                      fontSize: 16,
+                                                                                                      fontFamily: 'Prompt'
+                                                                                                    ),
+                                                                                                  ),
+                                                                                                  onChanged: (date) {
+                                                                                                  // print('change ${formatter.format(date)}');
+                                                                                                }, onConfirm: (date) {
+                                                                                                  print('confirm ${formatter.format(date)}');  
+                                                                                                  datecont.text = formatter.format(date);
+                                                                                                }, currentTime: DateTime.now(), locale: LocaleType.en
+                                                                                              );
+                                                                                            },
+                                                                                            validator: (value) {
+                                                                                              if (value == null || value.isEmpty) {
+                                                                                                return 'Please Select Date';
+                                                                                              }
+                                                                                              return null;
+                                                                                            },
+                                                                                            readOnly: true,
+                                                                                            decoration: const InputDecoration(
+                                                                                              prefixIcon: Icon(Icons.calendar_month_outlined, color: styles.maincolor),
+                                                                                              border: OutlineInputBorder(),
+                                                                                              enabledBorder: styles.customborder,
+                                                                                              focusedBorder: styles.customborder,
+                                                                                              errorBorder: styles.customborder,
+                                                                                              errorStyle: styles.customerr,
+                                                                                              focusedErrorBorder: styles.customborder,
+                                                                                              labelText: 'Select Prefered Date',
+                                                                                              labelStyle: TextStyle(
+                                                                                                color: styles.grey,
+                                                                                                fontFamily: 'Prompt'
+                                                                                              )
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ],
+                                                                                    )
+                                                                                  ),
+                                                                                  Padding(
+                                                                                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                                                                    child: Row(
+                                                                                      children: [
+                                                                                        Expanded(
+                                                                                          child: TextFormField(
+                                                                                            controller: timecont,
+                                                                                            onTap: () {
+                                                                                              DatePicker.showTime12hPicker(
+                                                                                                context,
+                                                                                                showTitleActions: true,
+                                                                                                // minTime: DateTime(int.parse(yearnow), int.parse(mthnow), today),
+                                                                                                // maxTime: DateTime(int.parse(yearnow), int.parse(mthnow), lastday),
+                                                                                                theme: const DatePickerTheme(
+                                                                                                  headerColor: styles.white,
+                                                                                                  backgroundColor: styles.white,
+                                                                                                  itemStyle: TextStyle(
+                                                                                                      color: styles.black,
+                                                                                                      fontWeight: FontWeight.bold,
+                                                                                                      fontSize: 18
+                                                                                                  ),
+                                                                                                  doneStyle: TextStyle(
+                                                                                                    color: styles.black, 
+                                                                                                    fontSize: 16,
+                                                                                                    fontFamily: 'Prompt'
+                                                                                                  ),
+                                                                                                  cancelStyle: TextStyle(
+                                                                                                    color: styles.red, 
+                                                                                                    fontSize: 16,
+                                                                                                    fontFamily: 'Prompt'
+                                                                                                  ),
+                                                                                                ),
+                                                                                                onChanged: (time) {
+                                                                                                  // print('change ${timeformatter.format(time)}');
+                                                                                                }, onConfirm: (time) {
+                                                                                                  print('confirm ${timeformatter.format(time)}');
+                                                                                                  print('confirm ${timeformatjm.format(time)}');
+                                                                                                  validtime.text = timeformatter.format(time);
+                                                                                                  timecont.text = timeformatjm.format(time);
+                                                                                                }, currentTime: DateTime.now(), locale: LocaleType.en
+                                                                                              );
+                                                                                            },
+                                                                                            validator: (value) {
+                                                                                              if (value == null || value.isEmpty) {
+                                                                                                return 'Please Select Time';
+                                                                                              }
+                                                                                              return null;
+                                                                                            },
+                                                                                            readOnly: true,
+                                                                                            decoration: const InputDecoration(
+                                                                                              prefixIcon: Icon(Icons.access_time_rounded, color: styles.maincolor),
+                                                                                              border: OutlineInputBorder(),
+                                                                                              enabledBorder: styles.customborder,
+                                                                                              focusedBorder: styles.customborder,
+                                                                                              errorBorder: styles.customborder,
+                                                                                              errorStyle: styles.customerr,
+                                                                                              focusedErrorBorder: styles.customborder,
+                                                                                              labelText: 'Select Prefered Time',
+                                                                                              labelStyle: TextStyle(
+                                                                                                color: styles.grey,
+                                                                                                fontFamily: 'Prompt'
+                                                                                              )
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ],
+                                                                                    )
+                                                                                  ),
+                                                                                  Padding(
+                                                                                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                                                                                    child: Row(
+                                                                                      children: [
+                                                                                        Expanded(
+                                                                                          child: Container(
+                                                                                            height: 50,
+                                                                                            alignment: Alignment.bottomCenter,
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: styles.maincolor,
+                                                                                              borderRadius: BorderRadius.circular(5)
+                                                                                            ),
+                                                                                            child: RoundedLoadingButton(
+                                                                                              elevation: 0,
+                                                                                              color: styles.maincolor,
+                                                                                              onPressed: () {
+                                                                                                if(formKey.currentState!.validate()){
+                                                                                                  var merged = '${datecont.text} ${validtime.text}';
+                                                                                                  var status = 'scheduled';
+                                                                                                  bookDoctor(context , snapshot.data![index].id.toString(), merged, status);
+                                                                                                  Timer(const Duration(seconds: 20), (){});
+                                                                                                } else {
+                                                                                                  bookbutton.reset();
+                                                                                                }
+                                                                                              }, 
+                                                                                              controller: bookbutton,
+                                                                                              child: const Text(
+                                                                                                'Book Now',
+                                                                                                style: TextStyle(
+                                                                                                  color: styles.white,
+                                                                                                  fontFamily: 'Prompt',
+                                                                                                  fontSize: 18
+                                                                                                ),
+                                                                                              )
+                                                                                            ),
+                                                                                          )
+                                                                                        ),
+                                                                                      ],
+                                                                                    )
+                                                                                  )
+                                                                                ],
+                                                                              )
+                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                      )
+                                                                    )
+                                                                  )
                                                                 ],
-                                                              )
-                                                              // const Text('Modal BottomSheet'),
-                                                              
+                                                              ),
                                                             ],
                                                           ),
-                                                        // child: Center(
-                                                          
-                                                        // ),
+                                                        )
                                                       );
                                                     },
-                                                    // isScrollControlled: true
                                                   );
-                                                  // Fluttertoast.showToast(
-                                                  //   msg: 'Book Button',
-                                                  //   // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
-                                                  //   textColor: Colors.white,
-                                                  // );
                                                 },
                                                 splashColor: styles.grey,
                                                 child: Column(

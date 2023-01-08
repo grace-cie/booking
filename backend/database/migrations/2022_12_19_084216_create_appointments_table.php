@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('appointment_tracking_id')->unique();
             $table->integer('doctor_id');
             $table->integer('patient_id');
-            $table->dateTime('scheduled_in')->nullable();
             $table->dateTime('scheduled_view');
+            $table->dateTime('scheduled_in')->nullable();
             $table->string('findings')->nullable();
             $table->integer('prescription')->nullable();
             $table->string('notes')->nullable();

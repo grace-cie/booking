@@ -9,8 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 
-class ApiHandler extends FullLifeCycleController {
+class ApiHandler extends GetxController {
   var url = 'http://192.168.254.102:8000';
+
+
   
 
   var accesstoken = '';
@@ -61,6 +63,17 @@ class ApiHandler extends FullLifeCycleController {
     }
     
   }
+
+
+  
+
+  // var name = 'Jonatas Borges'.obs;
+  // var savedate = '0000-00-00'.obs;
+  // saveDate(RxString date) {
+  //   savedate = date;
+  //   print('controller $savedate');
+  // }
+
 
   // var doctors = '';
   // loadDoctors()async{

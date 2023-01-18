@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:frontend/views/doc_homepage.dart';
 import 'package:frontend/views/tabs/home.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -110,23 +111,43 @@ class MainFormState extends State<MainForm>{
     } else {
       Map<String, dynamic> map = json.decode(response.body);
       var tokin = map["access_token"];
+      var userclass = map["userclass"];
       apihandler.getToken(tokin);
       apihandler.loginUser();
 
-      await Future.delayed(const Duration(seconds: 2)).then((_){
-        setState(() {
-          isLoading = false;
+      if(userclass == 'patient'){
+        await Future.delayed(const Duration(seconds: 2)).then((_){
+          setState(() {
+            isLoading = false;
+          });
+          // ignore: use_build_context_synchronously
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (
+                BuildContext context
+              ) => const Homepage()
+            )
+          );
         });
-        // ignore: use_build_context_synchronously
-        Navigator.push(
-          context, 
-          MaterialPageRoute(
-            builder: (
-              BuildContext context
-            ) => const Homepage()
-          )
-        );
-      });
+      } else {
+        await Future.delayed(const Duration(seconds: 2)).then((_){
+          setState(() {
+            isLoading = false;
+          });
+          // ignore: use_build_context_synchronously
+          Navigator.push(
+            context, 
+            MaterialPageRoute(
+              builder: (
+                BuildContext context
+              ) => const DocHomepage()
+            )
+          );
+        });
+      }
+
+      
       return AuthRes.fromJson(tokin);
     }
   }

@@ -23,7 +23,7 @@ class DocController extends AuthController {
           ]]);
      }
 
-     private function patientId(){
+     private function userId(){
           return Auth::user()->id;
      }
 
@@ -34,7 +34,7 @@ class DocController extends AuthController {
      }
 
      public function bookDoctor(Request $request){
-          $patient_id = $this->patientId();
+          $patient_id = $this->userId();
 
           $random = '2';
           for ($i = 0; $i < 6; $i++) {
@@ -56,8 +56,6 @@ class DocController extends AuthController {
                'scheduled_in',
                'status',
           );
-
-          
 
           $date = new DateTime($input['scheduled_in']);
 
@@ -85,7 +83,7 @@ class DocController extends AuthController {
                $code = 403;
                     $output = [
                     'code' => $code,
-                    'message' => 'there is an existing booking within the given schedule',
+                    'message' => 'There is an existing booking within the given schedule',
                ];
           //if theres no existing booking
           } else {
@@ -99,7 +97,8 @@ class DocController extends AuthController {
                     $appointment_data['scheduled_view'] = $input['scheduled_in'];
                     $appointment_data['status'] = $input['status'];
      
-                    $appointments = DB::insert("insert into appointments (".implode(",", array_keys($appointment_data)) . ') VALUES (\'' . implode("','", array_values($appointment_data)) . "')");
+                    // $appointments = DB::insert("insert into appointments (".implode(",", array_keys($appointment_data)) . ') VALUES (\'' . implode("','", array_values($appointment_data)) . "')");
+                    $appointments = DB::table('appointments')->insert($appointment_data);
                
                     if (!$appointments) {
                          $code = 500;
@@ -128,20 +127,23 @@ class DocController extends AuthController {
      }
 
      public function viewMyAppointments(){
-          $patient_id = $this->patientId();
+          $patient_id = $this->userId();
 
-          $user_appointments = DB::select("select * from appointments where patient_id='$patient_id' limit 15");
+          // $user_appointments = DB::select("select * from appointments where patient_id='$patient_id' limit 15");
+          $user_appointments = DB::table('appointments')
+                              ->where('patient_id', $patient_id)
+                              ->limit(15)
+                              ->get();
 
           $count = count($user_appointments); //rowCount
 
-          $id = [];
-          $doctorDetails = [];
+          $appointments = [];
 
           foreach($user_appointments as $user_appointment){
                $doctor = User::find($user_appointment->doctor_id);
                $patient = User::find($user_appointment->patient_id);
 
-               $id[] = [
+               $appointments[] = [
                     "id" => $user_appointment->id,
                     "appointment_tracking_id" => $user_appointment->appointment_tracking_id,
                     "doctor" => $doctor['first_name'],
@@ -154,26 +156,127 @@ class DocController extends AuthController {
                ];
           }
 
-          if(!empty($user_appointments)){
-               return response()->json($id) ;
-          } else {
-               $code = 200;
+          if($count === 0){
+               $code = 400;
                $output = [
                     'message' => 'you have no appointments record',
                ];
-               return response()->json($user_appointments);
+          } else {
+               if(!empty($user_appointments)){
+                    $code = 200;
+                    $output = $appointments;
+               }
           }
-          
+          return response()->json($output, $code);
+     }
 
-          
+     public function viewDocAppointments(){
+          $doctor_id = $this->userId();
+
+          // $user_appointments = DB::select("select * from appointments where patient_id='$patient_id' limit 15");
+          $user_appointments = DB::table('appointments')
+                              ->where('doctor_id', $doctor_id)
+                              ->limit(15)
+                              ->get();
+
+          $count = count($user_appointments); //rowCount
+
+          $appointments = [];
+
+          foreach($user_appointments as $user_appointment){
+               $doctor = User::find($user_appointment->doctor_id);
+               $patient = User::find($user_appointment->patient_id);
+
+               $appointments[] = [
+                    "id" => $user_appointment->id,
+                    "appointment_tracking_id" => $user_appointment->appointment_tracking_id,
+                    "doctor" => $doctor['first_name'],
+                    "patient" => $patient['first_name'],
+                    "scheduled_view" => $user_appointment->scheduled_view,
+                    "findings" => $user_appointment->findings,
+                    "prescription" => $user_appointment->prescription,
+                    "notes" => $user_appointment->notes,
+                    "status" => $user_appointment->status,
+               ];
+          }
+
+          if($count === 0){
+               $code = 400;
+               $output = [
+                    'message' => 'you have no appointments record',
+               ];
+          } else {
+               if(!empty($user_appointments)){
+                    $code = 200;
+                    $output = $appointments;
+               }
+          }
+          return response()->json($output, $code);
      }
 
      public function updateAppointmentStatus(){
-          $all_appointments = DB::select("UPDATE appointments SET status = 'cancelled' WHERE scheduled_in < NOW() AND status = 'scheduled'");
+          // $all_appointments = DB::select("UPDATE appointments SET status = 'cancelled' WHERE scheduled_in < NOW() AND status = 'scheduled'");
+          $all_appointments = DB::table('appointments')
+                              ->where('scheduled_in', '<', DB::raw('NOW()'))
+                              ->where('status', 'scheduled')
+                              ->update(['status' => 'cancelled']);
+     }
+
+     public function cancelApppointment($id){
+          // $appointment = DB::select("UPDATE appointments SET status = 'cancelled' WHERE id = '$id' AND status = 'scheduled'");
+          $appointment = DB::table('appointments')
+                         ->where('id', $id)
+                         ->where('status', 'scheduled')
+                         ->update(['status' => 'cancelled']);
+
+          if($appointment){
+               $code = 200;
+               $output = [
+                    'message' => 'Successfully Cancelled Appointment'
+               ];
+          } else {
+               $code = 400;
+               $output = [
+                    'message' => 'An Error Occured'
+               ];
+          }
+
+          return response()->json($output, $code);
+     }
+
+     public function addFindings(Request $request, $appointment_id){
+
+          $this->validate($request, [
+               // 'id' => 'string',
+               'findings' => 'required|string',
+          ]);
+
+          $input = $request->only(
+               // 'id',
+               'findings',
+          );
+
+          $insert_findings = DB::table('appointments')
+          ->where('id', $appointment_id)
+          ->update(['findings' => $input['findings']]);
+
+          if($insert_findings){
+               $code = 200;
+               $output = [
+                    'message' => 'Record Added'
+               ];
+          } else {
+               $code = 400;
+               $output = [
+                    'message' => 'An Error Occured'
+               ];
+          }
+
+          return response()->json($output, $code);
      }
 
      // public function getMyAppointments(){
-          //      $patient_id = $this->patientId();
+          //      $patient_id = $this->userId();
 
           //      $my_appointments = B::select("select * from appointments where patient_id='$patient_id' limit 15");
           // }

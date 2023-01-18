@@ -55,6 +55,11 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.11.0
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/1024.png"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -76,6 +81,10 @@ flutter:
     - assets/images/hospital.png
     - assets/images/calendar.png
     - assets/images/online.png
+    - assets/images/hospital2.png
+    - assets/images/prescription.png
+    - assets/images/notes.png
+    - assets/images/examination.png
   fonts:
     - family: Prompt
       fonts: 

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:frontend/views/tabs/book.dart';
+
 import '../../helpers/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -366,6 +368,18 @@ class SearchDoctorUiState extends State<SearchDoctorUi>{
                                             children: [
                                               InkWell(
                                                 onTap: () => _showOverlay(context),
+                                                // onTap: () {
+                                                //   Future.delayed(const Duration(seconds: 2)).then((_){
+                                                //     Navigator.push(
+                                                //       context, 
+                                                //       MaterialPageRoute(
+                                                //         builder: (
+                                                //           BuildContext context
+                                                //         ) => const BookUi()
+                                                //       )
+                                                //     );
+                                                //   });
+                                                // },
                                                 splashColor: styles.grey,
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,

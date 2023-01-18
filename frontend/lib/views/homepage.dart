@@ -166,7 +166,7 @@ class HomepageState extends State<Homepage> {
               ),
 
               SalomonBottomBarItem(
-                icon: const Icon(Icons.search),
+                icon: const Icon(Icons.person_search_rounded),
                 title: const Text(
                   "Find Doctors",
                   style: optionStyle,

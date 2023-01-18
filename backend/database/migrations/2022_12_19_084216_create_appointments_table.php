@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('scheduled_view');
             $table->dateTime('scheduled_in')->nullable();
             $table->string('findings')->nullable();
-            $table->integer('prescription')->nullable();
+            $table->string('prescription')->nullable();
             $table->string('notes')->nullable();
             $table->enum('status',['scheduled','cancelled','completed']);
             $table->timestamps();

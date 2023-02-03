@@ -133,6 +133,7 @@ class DocController extends AuthController {
           $user_appointments = DB::table('appointments')
                               ->where('patient_id', $patient_id)
                               ->limit(15)
+                              ->orderBy('scheduled_in', 'desc')
                               ->get();
 
           $count = count($user_appointments); //rowCount
@@ -177,6 +178,7 @@ class DocController extends AuthController {
           $user_appointments = DB::table('appointments')
                               ->where('doctor_id', $doctor_id)
                               ->limit(15)
+                              ->orderBy('scheduled_in', 'desc')
                               ->get();
 
           $count = count($user_appointments); //rowCount
@@ -244,6 +246,28 @@ class DocController extends AuthController {
           return response()->json($output, $code);
      }
 
+     public function completeApppointment($id){
+          // $appointment = DB::select("UPDATE appointments SET status = 'cancelled' WHERE id = '$id' AND status = 'scheduled'");
+          $appointment = DB::table('appointments')
+                         ->where('id', $id)
+                         ->where('status', 'scheduled')
+                         ->update(['status' => 'completed']);
+
+          if($appointment){
+               $code = 200;
+               $output = [
+                    'message' => 'Successfully Completed Appointment'
+               ];
+          } else {
+               $code = 400;
+               $output = [
+                    'message' => 'An Error Occured'
+               ];
+          }
+
+          return response()->json($output, $code);
+     }
+
      public function addFindings(Request $request, $appointment_id){
 
           $this->validate($request, [
@@ -264,6 +288,104 @@ class DocController extends AuthController {
                $code = 200;
                $output = [
                     'message' => 'Record Added'
+               ];
+          } else {
+               $code = 400;
+               $output = [
+                    'message' => 'An Error Occured'
+               ];
+          }
+
+          return response()->json($output, $code);
+     }
+
+     public function addPrescription(Request $request, $appointment_id){
+
+          $this->validate($request, [
+               // 'id' => 'string',
+               'prescription' => 'required|string',
+          ]);
+
+          $input = $request->only(
+               // 'id',
+               'prescription',
+          );
+
+          $insert_prescription = DB::table('appointments')
+          ->where('id', $appointment_id)
+          ->update(['prescription' => $input['prescription']]);
+
+          if($insert_prescription){
+               $code = 200;
+               $output = [
+                    'message' => 'Record Added'
+               ];
+          } else {
+               $code = 400;
+               $output = [
+                    'message' => 'An Error Occured'
+               ];
+          }
+
+          return response()->json($output, $code);
+     }
+
+     public function addNotes(Request $request, $appointment_id){
+
+          $this->validate($request, [
+               // 'id' => 'string',
+               'notes' => 'required|string',
+          ]);
+
+          $input = $request->only(
+               // 'id',
+               'notes',
+          );
+
+          $insert_notes = DB::table('appointments')
+          ->where('id', $appointment_id)
+          ->update(['notes' => $input['notes']]);
+
+          if($insert_notes){
+               $code = 200;
+               $output = [
+                    'message' => 'Record Added'
+               ];
+          } else {
+               $code = 400;
+               $output = [
+                    'message' => 'An Error Occured'
+               ];
+          }
+
+          return response()->json($output, $code);
+     }
+
+     public function addFPN(Request $request, $appointment_id){
+          $this->validate($request, [
+               'findings' => 'required|string',
+               'prescription' => 'required|string',
+               'notes' => 'required|string',
+          ]);
+
+          $input = $request->only(              
+               'findings',
+               'prescription',
+               'notes',
+          );
+
+          $insert_fpn = DB::table('appointments')
+          ->where('id', $appointment_id)
+          ->update([
+               'findings' => $input['findings'],
+               'prescription' => $input['prescription'],
+               'notes' => $input['notes']    
+          ]);
+
+          if($insert_fpn){
+               $code = 200;
+               $output = [
+                    'message' => ' Added Records'
                ];
           } else {
                $code = 400;

@@ -61,6 +61,7 @@ class DocBookUi extends StatefulWidget {
   State<StatefulWidget> createState() => DocBookUiState();
 }
 final RoundedLoadingButtonController cancelbutton = RoundedLoadingButtonController();
+final RoundedLoadingButtonController completebutton = RoundedLoadingButtonController();
 final apihandler = Get.put(ApiHandler());
 ApiHandler apifind = Get.find<ApiHandler>();
 
@@ -146,14 +147,54 @@ class DocBookUiState extends State<DocBookUi>{
     }
   }
 
-  addFindings(context, String id, String findings) async {
-    print('findings $findings');
+  completeAppointment(context ,String id) async{
+    var token = apifind.accesstoken;
+    final response = await http.post(
+      Uri.parse('${apihandler.url}/auth/complete-appointment/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    Map<String, dynamic> mapp = await json.decode(response.body);
+    var message = mapp['message'];
+    if(response.statusCode == 200){
+      completebutton.reset();
+      Fluttertoast.showToast(
+        msg: message,
+        // backgroundColor: const Color.fromARGB(255, 109, 140, 201),
+        textColor: Colors.white,
+      );
+      
+      // Navigator.pop(context);
+      await Future.delayed(const Duration(seconds: 1)).then((_){
+        Navigator.push(
+          context, 
+          MaterialPageRoute(
+            builder: (
+              BuildContext context
+            ) => const DocBookUi()
+          )
+        ); 
+      });
+
+    } else {
+      completebutton.reset();
+      Fluttertoast.showToast(
+        msg: message,
+        textColor: Colors.white,
+      );
+    }
+  }
+
+  addFpn(String id, String findings, String presc, String notes)async{
     var token = apifind.accesstoken;
     var map = <String, dynamic>{};
     map['findings'] = findings;
+    map['prescription'] = presc;
+    map['notes'] = notes;
 
     final response = await http.post(
-      Uri.parse('${apihandler.url}/auth/add-findings/$id'),
+      Uri.parse('${apihandler.url}/auth/add-fpn/$id'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -168,31 +209,23 @@ class DocBookUiState extends State<DocBookUi>{
         msg: message,
         textColor: Colors.white,
       );
-
-      // await Future.delayed(const Duration(seconds: 1)).then((_){
-      //   Navigator.push(
-      //     context, 
-      //     MaterialPageRoute(
-      //       builder: (
-      //         BuildContext context
-      //       ) => const DocBookUi()
-      //     )
-      //   ); 
-      // });
-      
+      // Navigator.of(context).pop(false);
     }else{
       Fluttertoast.showToast(
         msg: message,
         textColor: Colors.white,
       );
+      completebutton.reset();
       throw Exception('Failed');
-      
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    final findingFormKey = GlobalKey<FormState>();
+    final FPNkey = GlobalKey<FormState>();
     final findingsctrl = TextEditingController();
+    final prescctrl = TextEditingController();
+    final notesctrl = TextEditingController();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -278,13 +311,13 @@ class DocBookUiState extends State<DocBookUi>{
                                                         child: Column(
                                                           mainAxisAlignment: MainAxisAlignment.center,
                                                           children: [
-                                                            SizedBox(height: 16),
-                                                            Container(
-                                                              width: 60,
-                                                              height: 60,
-                                                              child: Image.asset('assets/images/examination.png', scale: 8,),
-                                                            ),
-                                                            SizedBox(height: 3),  
+                                                            // SizedBox(height: 16),
+                                                            // Container(
+                                                            //   width: 60,
+                                                            //   height: 60,
+                                                            //   child: Image.asset('assets/images/examination.png', scale: 8,),
+                                                            // ),
+                                                            // SizedBox(height: 3),  
                                                             Text(
                                                               '${snapshot.data![index].patient}',
                                                               style: TextStyle(
@@ -313,42 +346,13 @@ class DocBookUiState extends State<DocBookUi>{
                                                         ),
                                                       ),
                                                     ),
-                                                    Padding(
+                                                    snapshot.data![index].status == 'cancelled' || snapshot.data![index].status == 'completed'
+                                                    ? Padding(
                                                       padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                                                       child: Card(
                                                         color: styles.maincolor,
                                                         child: ListTile(
                                                           // isThreeLine: true,
-                                                          trailing: snapshot.data![index].status == 'cancelled' || snapshot.data![index].status == 'completed'
-                                                          ? Column() 
-                                                          : InkWell(
-                                                            onTap: () {
-                                                              showDialog(
-                                                                context: context, 
-                                                                builder: (context) => AlertDialog(
-                                                                  title: Text('Add Findings'),
-                                                                  content: Form(
-                                                                    key: findingFormKey,
-                                                                    child: TextFormField(
-                                                                      autofocus: true,
-                                                                      controller: findingsctrl,
-                                                                      decoration: InputDecoration(hintText: 'Add Findings'),
-                                                                    )
-                                                                  ),
-                                                                  actions: [
-                                                                    TextButton(
-                                                                      onPressed: () {
-                                                                        // Navigator.of(context).pop(false);
-                                                                        addFindings(context, snapshot.data![index].id.toString(), findingsctrl.text);
-                                                                      },
-                                                                      child: Text('Add')
-                                                                    )
-                                                                  ],
-                                                                )
-                                                              );
-                                                            },
-                                                            child: const Icon(Icons.add_box_rounded),
-                                                          ),
                                                           onTap: () {
                                                             showDialog(
                                                               context: context,
@@ -376,6 +380,7 @@ class DocBookUiState extends State<DocBookUi>{
                                                                 ],
                                                               ),
                                                             );
+
                                                           },
                                                           leading: Image.asset('assets/images/hospital2.png', scale: 13,),
                                                           title: Text(
@@ -388,7 +393,7 @@ class DocBookUiState extends State<DocBookUi>{
                                                           subtitle: Text(
                                                             snapshot.data![index].findings == null
                                                             ? 'No Findings Yet' 
-                                                            : findingsctrl.text,
+                                                            : snapshot.data![index].findings,
                                                             style: TextStyle(
                                                               fontFamily: 'Prompt'
                                                             ),
@@ -396,16 +401,14 @@ class DocBookUiState extends State<DocBookUi>{
                                                           ),
                                                         ),
                                                       )
-                                                    ),
-                                                    Padding(
+                                                    ) : Column(),
+                                                    snapshot.data![index].status == 'cancelled' || snapshot.data![index].status == 'completed'
+                                                    ? Padding(
                                                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                                                       child: Card(
                                                         color: styles.maincolor,
                                                         child: ListTile(
                                                           // isThreeLine: true,
-                                                          trailing: InkWell(
-                                                            child: const Icon(Icons.add_box_rounded),
-                                                          ),
                                                           onTap: () {
                                                             showDialog(
                                                               context: context,
@@ -453,16 +456,14 @@ class DocBookUiState extends State<DocBookUi>{
                                                           ),
                                                         ),
                                                       )
-                                                    ),
-                                                    Padding(
+                                                    ) : Column(),
+                                                    snapshot.data![index].status == 'cancelled' || snapshot.data![index].status == 'completed'
+                                                    ? Padding(
                                                       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
                                                       child: Card(
                                                         color: styles.maincolor,
                                                         child: ListTile(
                                                           // isThreeLine: true,
-                                                          trailing: InkWell(
-                                                            child: const Icon(Icons.add_box_rounded),
-                                                          ),
                                                           onTap: () {
                                                             showDialog(
                                                               context: context,
@@ -510,13 +511,113 @@ class DocBookUiState extends State<DocBookUi>{
                                                           ),
                                                         ),
                                                       )
-                                                    ),
-                                                    // Padding(
-                                                    //   padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                                    //   child: Text(snapshot.data![index].id.toString()),
-                                                    // ),
+                                                    ) : Column(),
+
+                                                    //----- inputs
                                                     snapshot.data![index].status == 'cancelled' || snapshot.data![index].status == 'completed'
-                                                    ? Padding(padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),) //return empty
+                                                    ? Column()
+                                                    : Form(
+                                                      key: FPNkey,
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                                        children: [
+                                                          Padding(
+                                                            padding: const EdgeInsets.all(10),
+                                                            child: TextFormField(
+                                                              controller: findingsctrl,
+                                                              // obscureText: true,
+                                                              decoration: const InputDecoration(
+                                                                prefixIcon: Icon(Icons.find_in_page_rounded, color: styles.maincolor),
+                                                                border: OutlineInputBorder(),
+                                                                enabledBorder: styles.customborder,
+                                                                focusedBorder: styles.customborder,
+                                                                errorBorder: styles.customborder,
+                                                                errorStyle: styles.customerr,
+                                                                focusedErrorBorder: styles.customborder,
+                                                                labelText: 'Add Findings',
+                                                                labelStyle: TextStyle(
+                                                                  color: styles.grey,
+                                                                  fontFamily: 'Prompt'
+                                                                )
+                                                              ),
+                                                              validator: (value) {
+                                                                if (value == null || value.isEmpty) {
+                                                                  return 'Add Findings';
+                                                                } else if (value.length <= 2){
+                                                                  return 'Must be more than 2 characters';
+                                                                }
+                                                                return null;
+                                                              },
+                                                            ),
+                                                          ),
+
+                                                          Padding(
+                                                            padding: const EdgeInsets.all(10),
+                                                            child: TextFormField(
+                                                              controller: prescctrl,
+                                                              // obscureText: true,
+                                                              decoration: const InputDecoration(
+                                                                prefixIcon: Icon(Icons.medication_rounded, color: styles.maincolor),
+                                                                border: OutlineInputBorder(),
+                                                                enabledBorder: styles.customborder,
+                                                                focusedBorder: styles.customborder,
+                                                                errorBorder: styles.customborder,
+                                                                errorStyle: styles.customerr,
+                                                                focusedErrorBorder: styles.customborder,
+                                                                labelText: 'Add Prescription',
+                                                                labelStyle: TextStyle(
+                                                                  color: styles.grey,
+                                                                  fontFamily: 'Prompt'
+                                                                )
+                                                              ),
+                                                              validator: (value) {
+                                                                if (value == null || value.isEmpty) {
+                                                                  return 'Add Prescription';
+                                                                } else if (value.length <= 2){
+                                                                  return 'Must be more than 2 characters';
+                                                                }
+                                                                return null;
+                                                              },
+                                                            ),
+                                                          ),
+
+                                                          Padding(
+                                                            padding: const EdgeInsets.all(10),
+                                                            child: TextFormField(
+                                                              controller: notesctrl,
+                                                              // obscureText: true,
+                                                              decoration: const InputDecoration(
+                                                                prefixIcon: Icon(Icons.notes_rounded, color: styles.maincolor),
+                                                                border: OutlineInputBorder(),
+                                                                enabledBorder: styles.customborder,
+                                                                focusedBorder: styles.customborder,
+                                                                errorBorder: styles.customborder,
+                                                                errorStyle: styles.customerr,
+                                                                focusedErrorBorder: styles.customborder,
+                                                                labelText: 'Add Notes',
+                                                                labelStyle: TextStyle(
+                                                                  color: styles.grey,
+                                                                  fontFamily: 'Prompt'
+                                                                )
+                                                              ),
+                                                              validator: (value) {
+                                                                if (value == null || value.isEmpty) {
+                                                                  return 'Add Notes';
+                                                                } else if (value.length <= 2){
+                                                                  return 'Must be more than 2 characters';
+                                                                }
+                                                                return null;
+                                                              },
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )
+                                                    ),
+                                                    
+
+                                                    //----- inputs
+                                                    snapshot.data![index].status == 'cancelled' || snapshot.data![index].status == 'completed'
+                                                    ? Column()//return empty
                                                     : Padding(
                                                       padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
                                                       child: Row(
@@ -541,7 +642,41 @@ class DocBookUiState extends State<DocBookUi>{
                                                                   style: TextStyle(
                                                                     color: styles.white,
                                                                     fontFamily: 'Prompt',
-                                                                    fontSize: 18
+                                                                    fontSize: 12
+                                                                  ),
+                                                                )
+                                                              ),
+                                                            )
+                                                          ),
+                                                          SizedBox(
+                                                            width: 5,
+                                                          ),
+                                                          Expanded(
+                                                            child: Container(
+                                                              height: 50,
+                                                              alignment: Alignment.bottomCenter,
+                                                              decoration: BoxDecoration(
+                                                                color: styles.green,
+                                                                borderRadius: BorderRadius.circular(5)
+                                                              ),
+                                                              child: RoundedLoadingButton(
+                                                                elevation: 0,
+                                                                color: styles.green,
+                                                                onPressed: () {
+                                                                  if(FPNkey.currentState!.validate()){
+                                                                    addFpn(snapshot.data![index].id.toString(), findingsctrl.text, prescctrl.text, notesctrl.text);
+                                                                    completeAppointment(context, snapshot.data![index].id.toString());
+                                                                  } else {
+                                                                    completebutton.reset();
+                                                                  }
+                                                                }, 
+                                                                controller: completebutton,
+                                                                child: const Text(
+                                                                  'Complete Appointment',
+                                                                  style: TextStyle(
+                                                                    color: styles.white,
+                                                                    fontFamily: 'Prompt',
+                                                                    fontSize: 12
                                                                   ),
                                                                 )
                                                               ),

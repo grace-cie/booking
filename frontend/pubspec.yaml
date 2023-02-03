@@ -43,6 +43,7 @@ dependencies:
   modal_bottom_sheet: ^2.1.2
   flutter_datetime_picker: ^1.5.1
   rounded_loading_button: ^2.0.8
+  cupertino_radio_choice: ^1.0.2
     
 
 
@@ -85,6 +86,7 @@ flutter:
     - assets/images/prescription.png
     - assets/images/notes.png
     - assets/images/examination.png
+    - assets/images/stethoscope.png
   fonts:
     - family: Prompt
       fonts: 

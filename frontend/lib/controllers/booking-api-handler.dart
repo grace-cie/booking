@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class ApiHandler extends GetxController {
-  var url = 'http://192.168.1.10:8000';
+  var url = 'http://192.168.254.102:8000';
 
 
   

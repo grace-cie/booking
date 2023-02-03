@@ -29,7 +29,7 @@ class DocHomeUiState extends State<DocHomeUi>{
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Welcome Dr. $username',
+            'Welcome Dr.$username',
             style: const TextStyle(
               fontFamily: 'Prompt',
               color: Colors.white,

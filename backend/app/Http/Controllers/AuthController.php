@@ -107,11 +107,11 @@ class AuthController extends Controller
             'address' => 'required|string',
             'suffix' => 'string',
             'userclass' => 'required|string',
-            'bio' => 'required|string',
+            'bio' => 'string',
             'email' => 'required|email|unique:users',
             'phone' => 'required|string|unique:users',
-            'health_care_provider' => 'required|string',
-            'health_care_provider_address' => 'required|string',
+            'health_care_provider' => 'string',
+            'health_care_provider_address' => 'string',
             'password' => 'required|confirmed'
         ]);
         $input = $request->only(
@@ -150,7 +150,7 @@ class AuthController extends Controller
             if ($user->save()) {
                 $code = 200;
                 $output = [
-                    'user' => $user,
+                    // 'user' => $user,
                     'code' => $code,
                     'message' => 'User created Successfully',
                 ];
@@ -255,6 +255,21 @@ class AuthController extends Controller
             'userclass' => auth()->user()->user_class,
             'expires_in' => auth()->factory()->getTTL() * 60 * 24
         ]);
+    }
+
+    public function getUsers(){
+        // $users = DB::table('users')
+        //         ->get();
+        $users = Auth::user();
+
+        if($users){
+            $code = 200;
+            return response()->json($users, $code);
+        } else {
+            $code = 400;
+            $message = 'Error fetching users';
+            return response()->json($message, $code);
+        }
     }
 
 

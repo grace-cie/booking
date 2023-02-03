@@ -40,7 +40,12 @@ Route::group([
     Route::post('my-appointments', 'DocController@viewMyAppointments');
     Route::post('doc-appointments', 'DocController@viewDocAppointments');
     Route::post('cancel-appointment/{id}', 'DocController@cancelApppointment');
-    Route::post('add-findings/{appointment_id}', 'DocController@addFindings');
+    Route::post('complete-appointment/{id}', 'DocController@completeApppointment');
+    // Route::post('add-findings/{appointment_id}', 'DocController@addFindings');
+    // Route::post('add-prescription/{appointment_id}', 'DocController@addPrescription');
+    // Route::post('add-notes/{appointment_id}', 'DocController@addNotes');
+    Route::post('add-fpn/{appointment_id}', 'DocController@addFPN');
+    Route::post('getusers', 'AuthController@getUsers');
     // Route::post('face', 'DocController@testapi');
     // Route::post('faceget', 'DocController@getapi');
 });
